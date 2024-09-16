@@ -1,0 +1,45 @@
+name: Set Branch Protection on New Repo
+
+on:
+  repository_dispatch:
+    types: [created]
+
+jobs:
+  set-branch-protection:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install PyGithub
+
+      - name: Set branch protection
+        env:
+          GITHUB_TOKEN: ${{ secrets.ORG_GITHUB_TOKEN }}
+        run: |
+          import os
+          from github import Github
+
+          g = Github(os.environ['GITHUB_TOKEN'])
+          org = g.get_organization("YOUR_ORGANIZATION_NAME")
+          repo = org.get_repo(os.environ['GITHUB_REPOSITORY'])
+
+          branch = repo.get_branch("main")
+          branch.edit_protection(
+              required_approving_review_count=1,
+              dismiss_stale_reviews=True,
+              require_code_owner_reviews=True,
+              enforce_admins=True,
+              required_status_checks=None,
+              restrictions=None
+          )
+
+          print(f"Branch protection set for {repo.name}")
