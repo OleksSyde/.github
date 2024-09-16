@@ -13,16 +13,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.ORG_GITHUB_TOKEN }}
         run: |
           import os
-          import json
           from github import Github
 
-          # Parse the event payload
-          event_payload = json.loads(os.environ['GITHUB_EVENT_PATH'])
-          new_repo_name = event_payload['repository']['name']
-
           g = Github(os.environ['GITHUB_TOKEN'])
-          org = g.get_organization("OleksSyde")
-          repo = org.get_repo(new_repo_name)
+          org = g.get_organization("YOUR_ORGANIZATION_NAME")
+          repo = org.get_repo(os.environ['GITHUB_REPOSITORY'])
 
           branch = repo.get_branch("main")
           branch.edit_protection(
