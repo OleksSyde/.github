@@ -2,6 +2,10 @@ name: Add Branch Protection Rules
 
 on:
   workflow_dispatch:
+    inputs:
+      repo_name:
+        description: 'The name of the repository to add branch protection'
+        required: true
 
 jobs:
   add-branch-protection:
