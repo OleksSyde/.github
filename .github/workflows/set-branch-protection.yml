@@ -1,32 +1,28 @@
-name: Set Branch Protection on New Repo
+name: Add Branch Protection Rules
 
 on:
-  repository_dispatch:
-    types: [created]
+  workflow_dispatch:
 
 jobs:
-  set-branch-protection:
+  add-branch-protection:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Set branch protection
+      - name: Add Branch Protection Rules
         env:
           GITHUB_TOKEN: ${{ secrets.ORG_GITHUB_TOKEN }}
         run: |
-          import os
-          from github import Github
-
-          g = Github(os.environ['GITHUB_TOKEN'])
-          org = g.get_organization("YOUR_ORGANIZATION_NAME")
-          repo = org.get_repo(os.environ['GITHUB_REPOSITORY'])
-
-          branch = repo.get_branch("main")
-          branch.edit_protection(
-              required_approving_review_count=1,
-              dismiss_stale_reviews=True,
-              require_code_owner_reviews=True,
-              enforce_admins=True,
-              required_status_checks=None,
-              restrictions=None
-          )
-
-          print(f"Branch protection set for {repo.name}")
+          curl -X PUT \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          https://api.github.com/repos/${{ github.repository_owner }}/${{ github.event.inputs.repo_name }}/branches/main/protection \
+          -d '{
+            "required_status_checks": {
+              "strict": true,
+              "contexts": ["ci/test"]
+            },
+            "enforce_admins": true,
+            "required_pull_request_reviews": {
+              "required_approving_review_count": 2
+            }
+          }'
